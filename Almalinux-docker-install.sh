@@ -9,4 +9,7 @@ yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce
 # Install Docker and required components
 dnf install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
+# Add vicuser to docker group
+usermod -aG docker vicuser
+
 echo "Docker installation completed!"
