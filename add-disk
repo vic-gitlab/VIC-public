@@ -20,7 +20,7 @@ echo "Creating xfs filesystem on virtual hard drive..."
 mkfs.xfs $DEVICE
 
 echo "Creating data-disk directory..."
-mkdir $MOUNT_POINT
+mkdir -p $MOUNT_POINT
 
 echo "Mounting hard drive on /home/vicuser/data-disk ..."
 mount $DEVICE $MOUNT_POINT
@@ -29,9 +29,17 @@ echo "Setting permissions..."
 chown vicuser $MOUNT_POINT
 chgrp vicuser $MOUNT_POINT
 
-# Check if the device is mounted on the mount point
+# Check if mount was successful
 if findmnt -rn -S "$DEVICE" -T "$MOUNT_POINT" > /dev/null; then
-    echo "Hard drive successfully mounted $DEVICE on $MOUNT_POINT"
+    echo "Hard drive successfully mounted: $DEVICE on $MOUNT_POINT"
+    
+    # Ensure persistence after reboot
+    UUID=$(blkid -s UUID -o value $DEVICE)
+    if ! grep -q "$UUID" /etc/fstab; then
+        echo "Updating /etc/fstab..."
+        echo "UUID=$UUID $MOUNT_POINT xfs defaults 0 2" >> /etc/fstab
+    fi
 else
     echo "Failed to mount $DEVICE on $MOUNT_POINT"
+    exit 1
 fi
